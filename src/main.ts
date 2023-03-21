@@ -11,6 +11,7 @@ import { middleware as expressCtx } from 'express-ctx';
 
 import { SharedModule } from './shared/shared.module';
 import { ApiConfigService } from './shared/services/api-config.service';
+import { setupSwagger } from 'swagger';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(
@@ -35,7 +36,11 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
   const configService = app.select(SharedModule).get(ApiConfigService);
 
-  // app.use(expressCtx);
+  app.use(expressCtx);
+
+  if (configService.documentationEnabled) {
+    setupSwagger(app);
+  }
 
   const port = configService.appConfig.port;
   await app.listen(port);
