@@ -1,4 +1,6 @@
-import { Global, Module, Provider } from '@nestjs/common';
+import type { Provider } from '@nestjs/common';
+
+import { Global, Module } from '@nestjs/common';
 import { ApiConfigService } from './services/api-config.service';
 
 const providers: Provider[] = [ApiConfigService];

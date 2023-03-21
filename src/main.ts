@@ -1,16 +1,16 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {
-  ExpressAdapter,
-  NestExpressApplication,
-} from '@nestjs/platform-express';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import compression from 'compression';
 import morgan from 'morgan';
 import { middleware as expressCtx } from 'express-ctx';
-import { SharedModule } from 'shared/shared.module';
-import { ApiConfigService } from 'shared/services/api-config.service';
+
+import { SharedModule } from './shared/shared.module';
+import { ApiConfigService } from './shared/services/api-config.service';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(
@@ -35,7 +35,7 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
   const configService = app.select(SharedModule).get(ApiConfigService);
 
-  app.use(expressCtx);
+  // app.use(expressCtx);
 
   const port = configService.appConfig.port;
   await app.listen(port);
