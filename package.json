@@ -24,6 +24,7 @@
     "@nestjs/core": "^9.3.11",
     "@nestjs/platform-express": "^9.3.11",
     "@nestjs/swagger": "^6.2.1",
+    "@nestjs/typeorm": "^9.0.1",
     "compression": "^1.7.4",
     "express-ctx": "^0.1.1",
     "express-rate-limit": "^6.7.0",
@@ -31,7 +32,8 @@
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.5.5"
+    "rxjs": "^7.5.5",
+    "typeorm": "^0.3.12"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

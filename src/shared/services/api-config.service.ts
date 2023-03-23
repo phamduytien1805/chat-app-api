@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { isNil } from 'lodash';
+import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { SnakeNamingStrategy } from 'naming.strategy';
 
 @Injectable()
 export class ApiConfigService {
@@ -48,6 +50,32 @@ export class ApiConfigService {
   }
   get documentationEnabled(): boolean {
     return this.getBoolean('ENABLE_DOCUMENTATION');
+  }
+
+  get postgresConfig(): TypeOrmModuleOptions {
+    let entities = [
+      __dirname + '/../../modules/**/*.entity{.ts,.js}',
+      __dirname + '/../../modules/**/*.view-entity{.ts,.js}',
+    ];
+    let migrations = [__dirname + '/../../database/migrations/*{.ts,.js}'];
+
+    return {
+      entities,
+      migrations,
+      keepConnectionAlive: !this.isTest,
+      dropSchema: this.isTest,
+      type: 'postgres',
+      name: 'default',
+      host: this.getString('DB_HOST'),
+      port: this.getNumber('DB_PORT'),
+      username: this.getString('DB_USERNAME'),
+      password: this.getString('DB_PASSWORD'),
+      database: this.getString('DB_DATABASE'),
+      // subscribers: [UserSubscriber],
+      migrationsRun: true,
+      logging: this.getBoolean('ENABLE_ORM_LOGS'),
+      namingStrategy: new SnakeNamingStrategy(),
+    };
   }
 
   get authConfig() {
