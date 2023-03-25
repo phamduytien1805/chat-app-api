@@ -3,6 +3,8 @@ import { SharedModule } from './shared/shared.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiConfigService } from './shared/services/api-config.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { ApiConfigService } from './shared/services/api-config.service';
         configService.postgresConfig,
       inject: [ApiConfigService],
     }),
+    AuthModule,
+    UserModule,
   ],
 })
 export class AppModule {}
