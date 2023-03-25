@@ -12,6 +12,14 @@ import { middleware as expressCtx } from 'express-ctx';
 import { SharedModule } from './shared/shared.module';
 import { ApiConfigService } from './shared/services/api-config.service';
 import { setupSwagger } from 'swagger';
+import { HttpExceptionFilter } from './filters/bad-request.filter';
+import { QueryFailedFilter } from './filters/query-failed.filter';
+import {
+  ClassSerializerInterceptor,
+  HttpStatus,
+  UnprocessableEntityException,
+  ValidationPipe,
+} from '@nestjs/common';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(
@@ -33,7 +41,22 @@ export async function bootstrap(): Promise<NestExpressApplication> {
   app.enableVersioning();
 
   const reflector = app.get(Reflector);
+  console.log('reflector', reflector);
 
+  app.useGlobalFilters(
+    new HttpExceptionFilter(reflector),
+    new QueryFailedFilter(reflector),
+  );
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      transform: true,
+      dismissDefaultMessages: true,
+      exceptionFactory: (errors) => new UnprocessableEntityException(errors),
+    }),
+  );
   const configService = app.select(SharedModule).get(ApiConfigService);
 
   app.use(expressCtx);
