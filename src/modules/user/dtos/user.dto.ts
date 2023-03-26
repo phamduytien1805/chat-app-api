@@ -23,9 +23,6 @@ export class UserDto extends AbstractDto {
   avatar?: string;
 
   @ApiPropertyOptional()
-  phone?: string;
-
-  @ApiPropertyOptional()
   isActive?: boolean;
 
   constructor(user: UserEntity, options?: UserDtoOptions) {
@@ -34,7 +31,6 @@ export class UserDto extends AbstractDto {
     this.lastName = user.lastName;
     this.email = user.email;
     this.avatar = user.avatar;
-    this.phone = user.phone;
     this.isActive = options?.isActive;
   }
 }
