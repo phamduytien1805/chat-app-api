@@ -2,6 +2,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
@@ -22,6 +23,7 @@ import {
 } from '@nestjs/common';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
+  initializeTransactionalContext();
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
     new ExpressAdapter(),

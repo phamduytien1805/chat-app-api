@@ -25,7 +25,6 @@ export class UserService {
     const userSettings = this.userSettingsRepository.create(
       plainToClass(CreateSettingsDto, {
         isEmailVerified: false,
-        isPhoneVerified: false,
       }),
     );
     userSettings.userId = user.id;
