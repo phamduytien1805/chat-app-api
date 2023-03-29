@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { Trim } from 'decorations/transform.decorators';
+import { Trim } from '../../../decorations';
 
 export class CreateUserDto {
   @ApiProperty()

@@ -2,7 +2,7 @@ import { CreateUserDto } from '../auth/dtos/create-user.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 import { UserSettingsEntity } from './user-settings.entity';
 import { plainToClass } from 'class-transformer';
@@ -32,5 +32,9 @@ export class UserService {
     user.settings = await this.userSettingsRepository.save(userSettings);
 
     return user;
+  }
+
+  findOne(findData: FindOptionsWhere<UserEntity>): Promise<UserEntity | null> {
+    return this.userRepository.findOneBy(findData);
   }
 }

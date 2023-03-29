@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { isNil } from 'lodash';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { SnakeNamingStrategy } from 'naming.strategy';
-import { UserSubscriber } from 'entity-subscribers/user-subscriber';
+import { SnakeNamingStrategy } from '../../naming.strategy';
+import { UserSubscriber } from '../../entity-subscribers/user-subscriber';
 
 @Injectable()
 export class ApiConfigService {
