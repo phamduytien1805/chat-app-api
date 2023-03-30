@@ -47,7 +47,6 @@ export class AuthController {
     return new LoginPayloadDto(user.toDto(), token);
   }
 
-  @Version('1')
   @Get('me')
   @HttpCode(HttpStatus.OK)
   @Auth()

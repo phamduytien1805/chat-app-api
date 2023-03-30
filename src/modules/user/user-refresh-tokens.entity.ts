@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
 import type { IAbstractEntity } from '../../common/abstract.entity';
 import { AbstractEntity } from '../../common/abstract.entity';
@@ -8,25 +8,24 @@ import type { IUserEntity } from './user.entity';
 import { UserEntity } from './user.entity';
 import { UseDto } from '../../decorations';
 
-export interface IUserSettingsEntity extends IAbstractEntity<UserDto> {
-  isEmailVerified: boolean;
-
+export interface IUserRefreshToken extends IAbstractEntity<UserDto> {
+  refreshToken: string;
   user?: IUserEntity;
 }
 
-@Entity({ name: 'user_settings' })
+@Entity({ name: 'user_refresh_tokens' })
 @UseDto(UserDto)
-export class UserSettingsEntity
+export class UserRefreshTokensEntity
   extends AbstractEntity<UserDto, UserDtoOptions>
-  implements IUserSettingsEntity
+  implements IUserRefreshToken
 {
-  @Column({ default: false })
-  isEmailVerified: boolean;
+  @Column({ unique: true })
+  refreshToken: string;
 
   @Column({ type: 'uuid' })
   userId: string;
 
-  @OneToOne(() => UserEntity, (user) => user.settings, {
+  @ManyToOne(() => UserEntity, (user) => user.refreshTokens, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
