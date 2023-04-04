@@ -4,6 +4,7 @@ import { isNil } from 'lodash';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from '../../naming.strategy';
 import { UserSubscriber } from '../../entity-subscribers/user-subscriber';
+import { RedisClientOptions } from '@liaoliaots/nestjs-redis';
 
 @Injectable()
 export class ApiConfigService {
@@ -76,6 +77,13 @@ export class ApiConfigService {
       migrationsRun: true,
       logging: this.getBoolean('ENABLE_ORM_LOGS'),
       namingStrategy: new SnakeNamingStrategy(),
+    };
+  }
+
+  get redisConfig(): RedisClientOptions {
+    return {
+      host: this.getString('REDIS_HOST'),
+      port: this.getNumber('REDIS_PORT'),
     };
   }
 

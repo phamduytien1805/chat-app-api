@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 @Module({
   imports: [
@@ -14,6 +15,14 @@ import { DataSource } from 'typeorm';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+    RedisModule.forRootAsync({
+      imports: [SharedModule],
+      useFactory: (configService: ApiConfigService) => ({
+        readyLog: true,
+        config: configService.redisConfig, // using default namespace ('default')
+      }),
+      inject: [ApiConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [SharedModule],

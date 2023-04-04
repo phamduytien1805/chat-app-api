@@ -1,3 +1,4 @@
+import { Redis } from 'ioredis';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { UserLoginDto } from './dtos/user-login.dto';
@@ -6,7 +7,8 @@ import { validateHash } from '../../common/utils';
 import { TokenPayloadDto } from './dtos/token-data.dto';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import { JwtService } from '@nestjs/jwt';
-import { TokenType } from '../../constants/token-type';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import { TokenType } from '../../constants';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +16,7 @@ export class AuthService {
     private userService: UserService,
     private configService: ApiConfigService,
     private jwtService: JwtService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async createAccessToken(data: { userId: Uuid }): Promise<TokenPayloadDto> {
