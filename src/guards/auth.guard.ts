@@ -9,6 +9,7 @@ export function AuthGuard(
   if (options?.public) {
     strategies.push('public');
   }
+  console.log('NestAuthGuard(strategies)', NestAuthGuard(strategies));
 
   return NestAuthGuard(strategies);
 }

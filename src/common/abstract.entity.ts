@@ -37,7 +37,6 @@ export abstract class AbstractEntity<
 
   toDto(options?: O): DTO {
     const dtoClass = this.dtoClass;
-    console.log('dtoClass', dtoClass);
 
     if (!dtoClass) {
       throw new Error(

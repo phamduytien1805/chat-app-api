@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import { PassportModule } from '@nestjs/passport';
-
+import { v4 as uuidv4 } from 'uuid';
 @Module({
   imports: [
     UserModule,
@@ -17,7 +17,7 @@ import { PassportModule } from '@nestjs/passport';
         publicKey: configService.authConfig.publicKey,
         signOptions: {
           algorithm: 'RS256',
-          expiresIn: configService.authConfig.jwtExpirationTime,
+          jwtid: uuidv4(),
         },
         verifyOptions: {
           algorithms: ['RS256'],

@@ -4,11 +4,15 @@ import { UserService } from '../user/user.service';
 import { UserLoginDto } from './dtos/user-login.dto';
 import { UserEntity } from '../user/user.entity';
 import { validateHash } from '../../common/utils';
-import { TokenPayloadDto } from './dtos/token-data.dto';
+import {
+  AccessTokenPayloadDto,
+  RefreshTokenPayloadDto,
+} from './dtos/token-data.dto';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import { InjectRedis, DEFAULT_REDIS_NAMESPACE } from '@liaoliaots/nestjs-redis';
 import { TokenType } from '../../constants';
+import { UserNotFoundException, WrongCredential } from 'exceptions';
 
 @Injectable()
 export class AuthService {
@@ -16,16 +20,45 @@ export class AuthService {
     private userService: UserService,
     private configService: ApiConfigService,
     private jwtService: JwtService,
-    @InjectRedis() private readonly redis: Redis,
+    @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
   ) {}
 
-  async createAccessToken(data: { userId: Uuid }): Promise<TokenPayloadDto> {
-    return new TokenPayloadDto({
-      expiresIn: this.configService.authConfig.jwtExpirationTime,
-      accessToken: await this.jwtService.signAsync({
-        userId: data.userId,
-        type: TokenType.ACCESS_TOKEN,
-      }),
+  async createAccessToken(data: {
+    userId: Uuid;
+  }): Promise<AccessTokenPayloadDto> {
+    const expiresIn =
+      // this.configService.authConfig.jwtAccessTokenExpirationTime;
+      '1m';
+    return new AccessTokenPayloadDto({
+      expiresIn: expiresIn,
+      accessToken: await this.jwtService.signAsync(
+        {
+          userId: data.userId,
+          type: TokenType.ACCESS_TOKEN,
+        },
+        {
+          expiresIn: expiresIn,
+        },
+      ),
+    });
+  }
+
+  async createRefreshToken(data: {
+    userId: Uuid;
+  }): Promise<RefreshTokenPayloadDto> {
+    const expiresIn =
+      this.configService.authConfig.jwtRefreshTokenExpirationTime;
+    return new RefreshTokenPayloadDto({
+      expiresIn: expiresIn,
+      refreshToken: await this.jwtService.signAsync(
+        {
+          userId: data.userId,
+          type: TokenType.REFRESH_TOKEN,
+        },
+        {
+          expiresIn,
+        },
+      ),
     });
   }
 
@@ -34,7 +67,7 @@ export class AuthService {
       email: userLoginDto.email,
     });
     if (!user) {
-      throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+      throw new UserNotFoundException();
     }
 
     const isPasswordValid = await validateHash(
@@ -43,9 +76,9 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new HttpException('Credential is wrong.', HttpStatus.BAD_REQUEST);
+      throw new WrongCredential();
     }
 
-    return user!;
+    return user;
   }
 }

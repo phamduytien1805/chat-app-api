@@ -4,7 +4,9 @@ import { Reflector } from '@nestjs/core';
 import type { Response } from 'express';
 import { STATUS_CODES } from 'http';
 import { QueryFailedError } from 'typeorm';
-
+export const constraintErrors: Record<string, string> = {
+  UQ_97672ac88f789774dd47f7c8be3: 'error.unique.email',
+};
 @Catch(QueryFailedError)
 export class QueryFailedFilter implements ExceptionFilter<QueryFailedError> {
   constructor(public reflector: Reflector) {}
@@ -23,7 +25,9 @@ export class QueryFailedFilter implements ExceptionFilter<QueryFailedError> {
     response.status(status).json({
       statusCode: status,
       error: STATUS_CODES[status],
-      message: exception.constraint ? exception.constraint : undefined,
+      message: exception.constraint
+        ? constraintErrors[exception.constraint]
+        : undefined,
     });
   }
 }

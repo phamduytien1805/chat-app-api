@@ -1,3 +1,4 @@
+import { ContextProvider } from './../../providers/context.provider';
 import {
   Body,
   Controller,
@@ -5,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   Version,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -16,6 +18,8 @@ import { UserLoginDto } from './dtos/user-login.dto';
 import { LoginPayloadDto } from './dtos/login-payload.dto';
 import { UserEntity } from '../user/user.entity';
 import { Auth, AuthUser } from '../../decorations';
+import { Response } from 'express';
+import { TokenType } from '../../constants/token-type';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -40,11 +44,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: LoginPayloadDto, description: 'Successfully login' })
   async userLogin(
+    @Res({ passthrough: true }) res: Response, // passthrough option allows the response to be automatically sent to the client without return res.send()
     @Body() userLoginDto: UserLoginDto,
   ): Promise<LoginPayloadDto> {
     const user = await this.authService.validateUser(userLoginDto);
-    const token = await this.authService.createAccessToken({ userId: user.id });
-    return new LoginPayloadDto(user.toDto(), token);
+    const accessToken = await this.authService.createAccessToken({
+      userId: user.id,
+    });
+    const { refreshToken, expiresIn } =
+      await this.authService.createRefreshToken({
+        userId: user.id,
+      });
+
+    // Set the token as a cookie header
+    res.cookie(TokenType.REFRESH_TOKEN, refreshToken, { httpOnly: true });
+
+    return new LoginPayloadDto(user.toDto(), accessToken);
   }
 
   @Get('me')
