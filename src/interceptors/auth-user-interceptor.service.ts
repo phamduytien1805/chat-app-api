@@ -12,7 +12,6 @@ import { ContextProvider } from '../providers';
 export class AuthUserInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler) {
     const request = context.switchToHttp().getRequest();
-    console.log('request.headers', request.headers);
     const user = <UserEntity>request.user;
     ContextProvider.setAuthUser(user);
 

@@ -7,10 +7,6 @@ import { UserDto } from './dtos/user.dto';
 import type { IUserSettingsEntity } from './user-settings.entity';
 import { UserSettingsEntity } from './user-settings.entity';
 import { UseDto, VirtualColumn } from '../../decorations';
-import {
-  IUserRefreshToken,
-  UserRefreshTokensEntity,
-} from './user-refresh-tokens.entity';
 
 export interface IUserEntity extends IAbstractEntity<UserDto> {
   firstName?: string;
@@ -28,8 +24,6 @@ export interface IUserEntity extends IAbstractEntity<UserDto> {
   fullName?: string;
 
   settings?: IUserSettingsEntity;
-
-  refreshTokens?: IUserRefreshToken;
 }
 
 @Entity({ name: 'users' })
@@ -61,10 +55,4 @@ export class UserEntity
 
   @OneToOne(() => UserSettingsEntity, (userSettings) => userSettings.user)
   settings?: UserSettingsEntity;
-
-  @OneToMany(
-    () => UserRefreshTokensEntity,
-    (userRefreshTokens) => userRefreshTokens.user,
-  )
-  refreshTokens?: UserRefreshTokensEntity;
 }

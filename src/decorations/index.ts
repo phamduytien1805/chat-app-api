@@ -6,3 +6,4 @@ export * from './virtual-column.decorator';
 export * from './http.decorators';
 export * from './public-route.decorator';
 export * from './auth-user.decorator';
+export * from './cookies.decorator';

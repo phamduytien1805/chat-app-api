@@ -1,4 +1,5 @@
-import { JwtStrategy } from './jwt.strategy';
+import { TokenType } from './../../constants/token-type';
+import { AccessTokenJWTStrategy, RefreshTokenJWTStrategy } from './strategies';
 import { Module, forwardRef } from '@nestjs/common';
 import { UserModule } from 'modules/user/user.module';
 import { AuthController } from './auth.controller';
@@ -6,18 +7,20 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import { PassportModule } from '@nestjs/passport';
-import { v4 as uuidv4 } from 'uuid';
+
+const strategyProviders = [AccessTokenJWTStrategy, RefreshTokenJWTStrategy];
 @Module({
   imports: [
     UserModule,
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({
+      defaultStrategy: [TokenType.ACCESS_TOKEN, TokenType.REFRESH_TOKEN],
+    }),
     JwtModule.registerAsync({
       useFactory: (configService: ApiConfigService) => ({
         privateKey: configService.authConfig.privateKey,
         publicKey: configService.authConfig.publicKey,
         signOptions: {
           algorithm: 'RS256',
-          jwtid: uuidv4(),
         },
         verifyOptions: {
           algorithms: ['RS256'],
@@ -27,6 +30,6 @@ import { v4 as uuidv4 } from 'uuid';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [...strategyProviders, AuthService],
 })
 export class AuthModule {}

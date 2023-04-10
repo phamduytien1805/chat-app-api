@@ -17,9 +17,13 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UserLoginDto } from './dtos/user-login.dto';
 import { LoginPayloadDto } from './dtos/login-payload.dto';
 import { UserEntity } from '../user/user.entity';
-import { Auth, AuthUser } from '../../decorations';
+import { Auth, AuthUser, Cookies } from '../../decorations';
 import { Response } from 'express';
 import { TokenType } from '../../constants/token-type';
+import { InjectRedis, DEFAULT_REDIS_NAMESPACE } from '@liaoliaots/nestjs-redis';
+import { Redis } from 'ioredis';
+import { format } from 'util';
+// import { PREFIX_REFRESH_TOKEN } from 'constants';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -27,6 +31,7 @@ export class AuthController {
   constructor(
     private userService: UserService,
     private authService: AuthService,
+    @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
   ) {}
 
   @Post('register')
@@ -51,15 +56,26 @@ export class AuthController {
     const accessToken = await this.authService.createAccessToken({
       userId: user.id,
     });
-    const { refreshToken, expiresIn } =
-      await this.authService.createRefreshToken({
-        userId: user.id,
-      });
+    const { refreshToken } = await this.authService.createRefreshToken({
+      userId: user.id,
+    });
 
     // Set the token as a cookie header
     res.cookie(TokenType.REFRESH_TOKEN, refreshToken, { httpOnly: true });
 
     return new LoginPayloadDto(user.toDto(), accessToken);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @Auth()
+  @ApiOkResponse({ description: 'Successfully logout' })
+  async userLogout(
+    @Cookies(TokenType.REFRESH_TOKEN) refreshToken: string,
+    @AuthUser() currentUser: UserEntity,
+  ): Promise<boolean> {
+    console.log('refreshToken', refreshToken);
+    return true;
   }
 
   @Get('me')

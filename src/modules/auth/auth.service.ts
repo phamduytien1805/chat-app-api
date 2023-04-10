@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRedis, DEFAULT_REDIS_NAMESPACE } from '@liaoliaots/nestjs-redis';
 import { TokenType } from '../../constants';
 import { UserNotFoundException, WrongCredential } from 'exceptions';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,6 @@ export class AuthService {
     private userService: UserService,
     private configService: ApiConfigService,
     private jwtService: JwtService,
-    @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
   ) {}
 
   async createAccessToken(data: {
@@ -46,6 +46,8 @@ export class AuthService {
   async createRefreshToken(data: {
     userId: Uuid;
   }): Promise<RefreshTokenPayloadDto> {
+    const jid = uuidv4();
+
     const expiresIn =
       this.configService.authConfig.jwtRefreshTokenExpirationTime;
     return new RefreshTokenPayloadDto({
@@ -54,6 +56,7 @@ export class AuthService {
         {
           userId: data.userId,
           type: TokenType.REFRESH_TOKEN,
+          jid,
         },
         {
           expiresIn,

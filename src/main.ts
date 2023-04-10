@@ -21,6 +21,7 @@ import {
   UnprocessableEntityException,
   ValidationPipe,
 } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
   initializeTransactionalContext();
@@ -29,6 +30,8 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     new ExpressAdapter(),
     { cors: true },
   );
+  app.use(cookieParser());
+
   app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
   app.use(helmet());
   // app.setGlobalPrefix('/api'); use api as global prefix if you don't have subdomain
