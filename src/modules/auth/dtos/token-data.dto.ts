@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-
 export class AccessTokenPayloadDto {
   @ApiProperty()
   expiresIn: string | number;

@@ -11,6 +11,7 @@ import { PREFIX_REFRESH_TOKEN } from '../../../constants/redis-patterns';
 import { InvalidateRefreshToken } from '../../../exceptions/invalidate-refresh-token.exception';
 import { ApiConfigService } from '../../../shared/services/api-config.service';
 import { UserService } from '../../user/user.service';
+import type { RefreshTokenRawType } from '../dtos/token-raw.dto';
 
 @Injectable()
 export class RefreshTokenJWTStrategy extends PassportStrategy(
@@ -31,11 +32,7 @@ export class RefreshTokenJWTStrategy extends PassportStrategy(
     });
   }
 
-  async validate(args: {
-    userId: Uuid;
-    type: TokenType;
-    jid: string;
-  }): Promise<any> {
+  async validate(args: RefreshTokenRawType): Promise<RefreshTokenRawType> {
     if (args.type !== TokenType.REFRESH_TOKEN) {
       throw new InvalidateRefreshToken();
     }
@@ -55,5 +52,7 @@ export class RefreshTokenJWTStrategy extends PassportStrategy(
     if (isInBlackListed) {
       throw new InvalidateRefreshToken();
     }
+
+    return args;
   }
 }

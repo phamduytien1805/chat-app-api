@@ -11,17 +11,24 @@ import {
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Redis } from 'ioredis';
+import { format } from 'util';
 
+import { PREFIX_REFRESH_TOKEN } from '../../constants';
 import { TokenType } from '../../constants/token-type';
-import { Auth, AuthUser } from '../../decorations';
+import {
+  Auth,
+  AuthUser,
+  RefreshTokenRaw,
+  ValidateRefreshToken,
+} from '../../decorations';
 import { UserDto } from '../user/dtos/user.dto';
 import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginPayloadDto } from './dtos/login-payload.dto';
+import { RefreshTokenRawType } from './dtos/token-raw.dto';
 import { UserLoginDto } from './dtos/user-login.dto';
-// import { PREFIX_REFRESH_TOKEN } from 'constants';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -65,18 +72,22 @@ export class AuthController {
     return new LoginPayloadDto(user.toDto(), accessToken);
   }
 
-  // @Post('logout')
-  // @HttpCode(HttpStatus.OK)
-  // @Auth()
-  // @ApiOkResponse({ description: 'Successfully logout' })
-  // async userLogout(
-  //   @Cookies(TokenType.REFRESH_TOKEN) refreshToken: string,
-  //   @AuthUser() currentUser: UserEntity,
-  // ): Promise<boolean> {
-  //   console.log('refreshToken', refreshToken);
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ValidateRefreshToken()
+  @ApiOkResponse({ description: 'Successfully logout' })
+  async userLogout(
+    @RefreshTokenRaw() refreshTokenRaw: RefreshTokenRawType,
+  ): Promise<string> {
+    const { exp, jid } = refreshTokenRaw;
+    const now = new Date();
 
-  //   return true;
-  // }
+    return this.redis.setex(
+      format(PREFIX_REFRESH_TOKEN, jid),
+      exp * 1000 - now.getSeconds(),
+      jid,
+    );
+  }
 
   @Get('me')
   @HttpCode(HttpStatus.OK)

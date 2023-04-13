@@ -1,2 +1,2 @@
-export * from './token-type';
 export * from './redis-patterns';
+export * from './token-type';
