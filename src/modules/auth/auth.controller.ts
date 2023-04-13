@@ -53,8 +53,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: LoginPayloadDto, description: 'Successfully login' })
   async userLogin(
-    @Res({ passthrough: true })
-    res: Response, // passthrough option allows the response to be automatically sent to the client without return res.send()
+    @Res({ passthrough: true }) // passthrough option allows the response to be automatically sent to the client without return res.send()
+    res: Response,
     @Body() userLoginDto: UserLoginDto,
   ): Promise<LoginPayloadDto> {
     const user = await this.authService.validateUser(userLoginDto);
