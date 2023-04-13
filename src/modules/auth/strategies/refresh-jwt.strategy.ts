@@ -10,8 +10,9 @@ import { TokenType } from '../../../constants';
 import { PREFIX_REFRESH_TOKEN } from '../../../constants/redis-patterns';
 import { InvalidateRefreshToken } from '../../../exceptions/invalidate-refresh-token.exception';
 import { ApiConfigService } from '../../../shared/services/api-config.service';
-import { UserService } from '../../user/user.service';
 import type { RefreshTokenRawType } from '../dtos/token-raw.dto';
+import { UserService } from '../../user/user.service';
+import { UserNotFoundException } from '../../../exceptions/user-not-found.exception';
 
 @Injectable()
 export class RefreshTokenJWTStrategy extends PassportStrategy(
@@ -42,7 +43,7 @@ export class RefreshTokenJWTStrategy extends PassportStrategy(
     });
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UserNotFoundException();
     }
 
     const isInBlackListed = await this.redis.get(

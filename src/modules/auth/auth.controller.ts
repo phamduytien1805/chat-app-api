@@ -10,25 +10,25 @@ import {
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { Redis } from 'ioredis';
-import { format } from 'util';
 
-import { PREFIX_REFRESH_TOKEN } from '../../constants';
-import { TokenType } from '../../constants/token-type';
+import { TokenType } from '../../constants';
 import {
   Auth,
   AuthUser,
   RefreshTokenRaw,
   ValidateRefreshToken,
 } from '../../decorations';
-import { UserDto } from '../user/dtos/user.dto';
+import { UserDto } from '../user/dtos';
 import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { LoginPayloadDto } from './dtos/login-payload.dto';
-import { RefreshTokenRawType } from './dtos/token-raw.dto';
-import { UserLoginDto } from './dtos/user-login.dto';
+import { AccessTokenPayloadDto } from './dtos/token-data.dto';
+import {
+  CreateUserDto,
+  LoginPayloadDto,
+  RefreshTokenRawType,
+  UserLoginDto,
+} from './dtos';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -36,7 +36,6 @@ export class AuthController {
   constructor(
     private userService: UserService,
     private authService: AuthService,
-    @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
   ) {}
 
   @Post('register')
@@ -78,15 +77,38 @@ export class AuthController {
   @ApiOkResponse({ description: 'Successfully logout' })
   async userLogout(
     @RefreshTokenRaw() refreshTokenRaw: RefreshTokenRawType,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<string> {
-    const { exp, jid } = refreshTokenRaw;
-    const now = new Date();
+    response.clearCookie(TokenType.REFRESH_TOKEN);
 
-    return this.redis.setex(
-      format(PREFIX_REFRESH_TOKEN, jid),
-      exp * 1000 - now.getSeconds(),
-      jid,
-    );
+    return this.authService.setRefreshTokenToBlacklist(refreshTokenRaw);
+  }
+
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @ValidateRefreshToken()
+  @ApiOkResponse({
+    type: AccessTokenPayloadDto,
+    description: 'Successfully get new access token',
+  })
+  async userRefreshToken(
+    @RefreshTokenRaw() refreshTokenRaw: RefreshTokenRawType,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AccessTokenPayloadDto> {
+    const { userId } = refreshTokenRaw;
+
+    const accessToken = await this.authService.createAccessToken({
+      userId,
+    });
+    const { refreshToken } = await this.authService.createRefreshToken({
+      userId,
+    });
+
+    res.cookie(TokenType.REFRESH_TOKEN, refreshToken, { httpOnly: true });
+
+    await this.authService.setRefreshTokenToBlacklist(refreshTokenRaw); // remove current refresh token
+
+    return accessToken;
   }
 
   @Get('me')

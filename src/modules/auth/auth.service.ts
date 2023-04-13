@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 
 import { validateHash } from '../../common/utils';
-import { TokenType } from '../../constants';
+import { PREFIX_REFRESH_TOKEN, TokenType } from '../../constants';
 import { UserNotFoundException, WrongCredential } from '../../exceptions';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import type { UserEntity } from '../user/user.entity';
@@ -13,6 +13,10 @@ import {
   RefreshTokenPayloadDto,
 } from './dtos/token-data.dto';
 import type { UserLoginDto } from './dtos/user-login.dto';
+import { RefreshTokenRawType } from './dtos/token-raw.dto';
+import { InjectRedis, DEFAULT_REDIS_NAMESPACE } from '@liaoliaots/nestjs-redis';
+import { Redis } from 'ioredis';
+import { format } from 'util';
 
 @Injectable()
 export class AuthService {
@@ -20,14 +24,14 @@ export class AuthService {
     private userService: UserService,
     private configService: ApiConfigService,
     private jwtService: JwtService,
+    @InjectRedis(DEFAULT_REDIS_NAMESPACE) private readonly redis: Redis,
   ) {}
 
   async createAccessToken(data: {
     userId: Uuid;
   }): Promise<AccessTokenPayloadDto> {
     const expiresIn =
-      // this.configService.authConfig.jwtAccessTokenExpirationTime;
-      '1m';
+      this.configService.authConfig.jwtAccessTokenExpirationTime;
 
     return new AccessTokenPayloadDto({
       expiresIn,
@@ -85,5 +89,16 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async setRefreshTokenToBlacklist({
+    jid,
+    exp,
+  }: RefreshTokenRawType): Promise<'OK'> {
+    return this.redis.setex(
+      format(PREFIX_REFRESH_TOKEN, jid),
+      exp - Math.floor(Date.now() / 1000), //Unix epoch in seconds
+      jid,
+    );
   }
 }

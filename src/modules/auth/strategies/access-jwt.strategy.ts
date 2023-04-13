@@ -7,6 +7,7 @@ import { ApiConfigService } from '../../../shared/services/api-config.service';
 import type { UserEntity } from '../../user/user.entity';
 import { UserService } from '../../user/user.service';
 import type { AccessTokenRawType } from '../dtos/token-raw.dto';
+import { UserNotFoundException } from '../../../exceptions/user-not-found.exception';
 
 @Injectable()
 export class AccessTokenJWTStrategy extends PassportStrategy(
@@ -33,7 +34,7 @@ export class AccessTokenJWTStrategy extends PassportStrategy(
     });
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UserNotFoundException();
     }
 
     return user;

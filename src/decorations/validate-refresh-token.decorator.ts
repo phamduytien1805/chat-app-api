@@ -1,12 +1,14 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 import { RefreshTokenGuard } from '../guards/refresh-token.guard';
 
 export function ValidateRefreshToken(): MethodDecorator {
   return applyDecorators(
     UseGuards(RefreshTokenGuard),
-    ApiBearerAuth(),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    ApiCookieAuth(),
+    ApiUnauthorizedResponse({
+      description: 'Unauthorized! Invalid refresh token!',
+    }),
   );
 }
