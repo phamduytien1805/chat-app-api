@@ -1,15 +1,15 @@
+import { DEFAULT_REDIS_NAMESPACE, InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import type { Request } from 'express';
+import { Redis } from 'ioredis';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { format } from 'util';
 
 import { TokenType } from '../../../constants';
-import { ApiConfigService } from '../../../shared/services/api-config.service';
-import { Request } from 'express';
-import { InvalidateRefreshToken } from '../../../exceptions/invalidate-refresh-token.exception';
-import { InjectRedis, DEFAULT_REDIS_NAMESPACE } from '@liaoliaots/nestjs-redis';
-import { Redis } from 'ioredis';
-import { format } from 'util';
 import { PREFIX_REFRESH_TOKEN } from '../../../constants/redis-patterns';
+import { InvalidateRefreshToken } from '../../../exceptions/invalidate-refresh-token.exception';
+import { ApiConfigService } from '../../../shared/services/api-config.service';
 import { UserService } from '../../user/user.service';
 
 @Injectable()
@@ -25,9 +25,7 @@ export class RefreshTokenJWTStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => {
-          return request?.cookies[TokenType.REFRESH_TOKEN];
-        },
+        (request: Request) => request.cookies[TokenType.REFRESH_TOKEN],
       ]),
       secretOrKey: configService.authConfig.publicKey,
     });
@@ -45,6 +43,7 @@ export class RefreshTokenJWTStrategy extends PassportStrategy(
     const user = await this.userService.findOne({
       id: args.userId,
     });
+
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -56,7 +55,5 @@ export class RefreshTokenJWTStrategy extends PassportStrategy(
     if (isInBlackListed) {
       throw new InvalidateRefreshToken();
     }
-
-    return;
   }
 }

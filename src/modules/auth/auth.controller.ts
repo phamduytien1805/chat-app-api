@@ -1,4 +1,4 @@
-import { ContextProvider } from './../../providers/context.provider';
+import { DEFAULT_REDIS_NAMESPACE, InjectRedis } from '@liaoliaots/nestjs-redis';
 import {
   Body,
   Controller,
@@ -7,22 +7,20 @@ import {
   HttpStatus,
   Post,
   Res,
-  Version,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { Redis } from 'ioredis';
+
+import { TokenType } from '../../constants/token-type';
+import { Auth, AuthUser } from '../../decorations';
+import { UserDto } from '../user/dtos/user.dto';
+import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
-import { UserDto } from 'modules/user/dtos/user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { UserLoginDto } from './dtos/user-login.dto';
 import { LoginPayloadDto } from './dtos/login-payload.dto';
-import { UserEntity } from '../user/user.entity';
-import { Auth, AuthUser, Cookies } from '../../decorations';
-import { Response } from 'express';
-import { TokenType } from '../../constants/token-type';
-import { InjectRedis, DEFAULT_REDIS_NAMESPACE } from '@liaoliaots/nestjs-redis';
-import { Redis } from 'ioredis';
-import { format } from 'util';
+import { UserLoginDto } from './dtos/user-login.dto';
 // import { PREFIX_REFRESH_TOKEN } from 'constants';
 
 @Controller('auth')
@@ -49,7 +47,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: LoginPayloadDto, description: 'Successfully login' })
   async userLogin(
-    @Res({ passthrough: true }) res: Response, // passthrough option allows the response to be automatically sent to the client without return res.send()
+    @Res({ passthrough: true })
+    res: Response, // passthrough option allows the response to be automatically sent to the client without return res.send()
     @Body() userLoginDto: UserLoginDto,
   ): Promise<LoginPayloadDto> {
     const user = await this.authService.validateUser(userLoginDto);
@@ -66,17 +65,18 @@ export class AuthController {
     return new LoginPayloadDto(user.toDto(), accessToken);
   }
 
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  @Auth()
-  @ApiOkResponse({ description: 'Successfully logout' })
-  async userLogout(
-    @Cookies(TokenType.REFRESH_TOKEN) refreshToken: string,
-    @AuthUser() currentUser: UserEntity,
-  ): Promise<boolean> {
-    console.log('refreshToken', refreshToken);
-    return true;
-  }
+  // @Post('logout')
+  // @HttpCode(HttpStatus.OK)
+  // @Auth()
+  // @ApiOkResponse({ description: 'Successfully logout' })
+  // async userLogout(
+  //   @Cookies(TokenType.REFRESH_TOKEN) refreshToken: string,
+  //   @AuthUser() currentUser: UserEntity,
+  // ): Promise<boolean> {
+  //   console.log('refreshToken', refreshToken);
+
+  //   return true;
+  // }
 
   @Get('me')
   @HttpCode(HttpStatus.OK)

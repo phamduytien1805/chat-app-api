@@ -1,12 +1,13 @@
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
+import { ApiConfigService } from '../../shared/services/api-config.service';
+import { UserModule } from '../user/user.module';
 import { TokenType } from './../../constants/token-type';
-import { AccessTokenJWTStrategy, RefreshTokenJWTStrategy } from './strategies';
-import { Module, forwardRef } from '@nestjs/common';
-import { UserModule } from 'modules/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtModule } from '@nestjs/jwt';
-import { ApiConfigService } from '../../shared/services/api-config.service';
-import { PassportModule } from '@nestjs/passport';
+import { AccessTokenJWTStrategy, RefreshTokenJWTStrategy } from './strategies';
 
 const strategyProviders = [AccessTokenJWTStrategy, RefreshTokenJWTStrategy];
 @Module({
